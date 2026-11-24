@@ -21,8 +21,12 @@
 //     is the whole debugging session in five words.
 //  5. It reads aloud cleanly, like speech, not a syllable exercise.
 //
-// Verified locally: node main.ts writes 78 bytes to entry.txt
-// (MAKEFUN_OUTPUT_DIR=out).
+// Verified locally: node main.ts writes 81 bytes to entry.txt
+// (MAKEFUN_OUTPUT_DIR=out): 25 + 1 + 31 + 1 + 22 + 1 newlines.
+// The gate refuses entries outside 1-200 characters, so the program
+// checks its own output before writing: three lines, and a total
+// length inside the gate's window. A failed check exits non-zero
+// instead of writing an entry the gate would refuse.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -34,5 +38,13 @@ const HAIKU = [
   'the duck knew it first',
 ].join('\n');
 
+const TEXT = HAIKU + '\n';
+if (HAIKU.split('\n').length !== 3) {
+  throw new Error(`expected 3 lines, got ${HAIKU.split('\n').length}`);
+}
+if (TEXT.length < 1 || TEXT.length > 200) {
+  throw new Error(`entry is ${TEXT.length} characters, outside the 1-200 gate`);
+}
+
 mkdirSync(O, { recursive: true });
-writeFileSync(join(O, 'entry.txt'), HAIKU + '\n', 'utf8');
+writeFileSync(join(O, 'entry.txt'), TEXT, 'utf8');
